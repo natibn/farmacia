@@ -13,16 +13,44 @@ const getProdutosDB = async () => {
 
 const addProdutoDB = async (body) => {
     try {
-        const { nome } = body;
-        const results = await pool.query(`INSERT INTO produtos (nome)
-        VALUES ($1) RETURNING codigo, nome, descricao, quantidade_estoque, ativo, valor, data_cadastro, categoria`,[nome, descricao, quantidade_estoque, ativo, valor, data_cadastro, categoria]);
+        const {
+            nome,
+            descricao,
+            quantidade_estoque,
+            ativo,
+            valor,
+            data_cadastro,
+            categoria
+        } = body;
+
+        const query = `
+            INSERT INTO produtos 
+                (nome, descricao, quantidade_estoque, ativo, valor, data_cadastro, categoria)
+            VALUES 
+                ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING 
+                codigo, nome, descricao, quantidade_estoque, ativo, valor, data_cadastro, categoria
+        `;
+        const values = [nome, descricao, quantidade_estoque, ativo, valor, data_cadastro, categoria];
+
+        const results = await pool.query(query, values);
         const produto = results.rows[0];
-        return new Produto(produto.codigo, produto.nome, produto.descricao, produto.quantidade_estoque,
-            produto.ativo, produto.valor, produto.data_cadastro, produto.categoria);
-    } catch (err){
-        throw "Erro ao inserir o produto: " + err;
+
+        return new Produto(
+            produto.codigo,
+            produto.nome,
+            produto.descricao,
+            produto.quantidade_estoque,
+            produto.ativo,
+            produto.valor,
+            produto.data_cadastro,
+            produto.categoria
+        );
+    } catch (err) {
+        throw new Error("Erro ao inserir o produto: " + err.message);
     }
 }
+
 
 const updateProdutoDB = async (body) => {
     try {
